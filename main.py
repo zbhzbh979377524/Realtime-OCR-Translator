@@ -462,7 +462,7 @@ class SelectRange(QMainWindow):
 
     def get_pos(self):
         self.snip.close()
-        self.cur_pos = self.snip.rect_coords
+        self.cur_pos = self.snip.rect_coordinates
         self.close()
 
 
@@ -473,7 +473,7 @@ class Snip(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.rect_coords = None
+        self.rect_coordinates = None
         self.btn = None
         screen = QApplication.primaryScreen()
         self.snipScreen = screen.grabWindow(
@@ -482,7 +482,7 @@ class Snip(QWidget):
         self.initUI()
         self.confirmBtn = QPushButton("OK", self)
         self.confirmBtn.clicked.connect(self.print_pos)
-        self.count = 0
+        self.confirmBtn.hide()
 
     def initUI(self):
         self.setGeometry(300, 300, 300, 200)
@@ -544,9 +544,9 @@ class Snip(QWidget):
 
     def print_pos(self):
         self.rect_qrect = QRect(self.startPos, self.endPos)
-        self.rect_coords = [self.startPos.x(), self.startPos.y(), self.endPos.x(), self.endPos.y()]
+        self.rect_coordinates = [self.startPos.x(), self.startPos.y(), self.endPos.x(), self.endPos.y()]
         print(self.rect_qrect)
-        print(type(self.rect_coords))
+        print(type(self.rect_coordinates))
         self.close()
 
 
