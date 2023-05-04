@@ -7,7 +7,7 @@
 
 3. [Tesseract OCR](https://github.com/UB-Mannheim/tesseract/wiki)のページにアクセスして、自分のOSに相応しいバージョンのをダウンロードしてインストールします。（本ソフトのメインページの下部から入ることもできます）ここで一番普及してるOS(Windows, 64bit)のバージョンのリンクを貼ります。(tesseract-ocr-w64-setup-5.3.1.20230401.exe (64 bit))
 
-4. Deeplの個人用翻訳API(Key)を申請します(https://www.deepl.com/ja/pro-api?cta=header-pro-api/)。ここでDeepl申請しなくても他のパブリックAPIを使えますが、Deeplの質が一番良いと思うからDeepl申請おすすめです。無料で一ヶ月50万文字まで翻訳できるからほとんど使い切れないです。
+4. Deeplの個人用翻訳API(Key)を申請します([https://www.deepl.com/ja/pro-api?cta=header-pro-api/](https://www.deepl.com/ja/pro-api?cta=header-pro-api/))。ここでDeepl申請しなくても他のパブリックAPIを使えますが、Deeplの質が一番良いと思うからDeepl申請おすすめです。無料で一ヶ月50万文字まで翻訳できるからほとんど使い切れないです。
 
 5. 本ソフトの翻訳設定で翻訳メソッドとAPIを入力します。（Deepl以外ならAPI入力が不要、今後他のAPIを追加する予定、Deeplを選択してもAPI入力しなければ他のメソッドになる）
 
