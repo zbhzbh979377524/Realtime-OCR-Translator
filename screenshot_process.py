@@ -29,41 +29,41 @@ class ScreenshotProcess:
         self.user_api = user_api
 
         # 设置ocr语言代码
-        if recognize_language == "中文":
+        if recognize_language == "中文" or recognize_language == "中国語" or recognize_language == "Chinese":
             self.recognize_language_code = 'chi_sim'
-        elif recognize_language == "日语":
+        elif recognize_language == "日语" or recognize_language == "日本語" or recognize_language == "Japanese":
             self.recognize_language_code = 'jpn'
-        elif recognize_language == "韩语":
+        elif recognize_language == "韩语" or recognize_language == "韓国語" or recognize_language == "Korean":
             self.recognize_language_code = 'kor'
         else:
             self.recognize_language_code = 'eng'
 
         # 设置翻译代码
-        if translate_language == "中文":
+        if translate_language == "中文" or translate_language == "中国語" or translate_language == "Chinese":
             self.translate_language_code = 'zh-cn'
-        elif translate_language == "日语":
+        elif translate_language == "日语" or translate_language == "日本語" or translate_language == "Japanese":
             self.translate_language_code = 'ja'
-        elif translate_language == "韩语":
+        elif translate_language == "韩语" or translate_language == "韓国語" or translate_language == "Korean":
             self.translate_language_code = 'ko'
         else:
             self.translate_language_code = 'en'
 
         # 设置原文的英文
-        if recognize_language == "中文":
+        if recognize_language == "中文" or recognize_language == "中国語" or recognize_language == "Chinese":
             self.from_language_eng = 'chinese (simplified)'
-        elif recognize_language == "日语":
+        elif recognize_language == "日语" or recognize_language == "日本語" or recognize_language == "Japanese":
             self.from_language_eng = 'japanese'
-        elif recognize_language == "韩语":
+        elif recognize_language == "韩语" or recognize_language == "韓国語" or recognize_language == "Korean":
             self.from_language_eng = 'korean'
         else:
             self.from_language_eng = 'english'
 
         # 设置目标语言的英文
-        if translate_language == "中文":
+        if translate_language == "中文" or translate_language == "中国語" or translate_language == "Chinese":
             self.trans_lang_eng = 'chinese (simplified)'
-        elif translate_language == "日语":
+        elif translate_language == "日语" or translate_language == "日本語" or translate_language == "Japanese":
             self.trans_lang_eng = 'japanese'
-        elif translate_language == "韩语":
+        elif translate_language == "韩语" or translate_language == "韓国語" or translate_language == "Korean":
             self.trans_lang_eng = 'korean'
         else:
             self.trans_lang_eng = 'english'
