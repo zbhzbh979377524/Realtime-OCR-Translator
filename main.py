@@ -516,6 +516,7 @@ class Snip(QWidget):
     def mousePressEvent(self, event):
         # クリックした位置を覚えておくよ
         self.startPos = event.pos()
+        self.confirmBtn.hide()
 
     def mouseMoveEvent(self, event):
         self.endPos = event.pos()
