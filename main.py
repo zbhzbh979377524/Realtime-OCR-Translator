@@ -166,6 +166,9 @@ class Main:
         self.root.geometry(f"500x500+{x}+{y}")
         self.root.title('Realtime-OCR-Translator')
         self.root.resizable(False, False)
+        self.root.deiconify()
+        self.root.lift()
+
         try:
             self.root.iconbitmap("./Image/icon.ico")
         except Exception:
@@ -466,13 +469,13 @@ class SelectRange(QMainWindow):
         self.close()
 
 
-
 class Snip(QWidget):
     startPos = QPoint(0, 0)
     endPos = QPoint(0, 0)
 
     def __init__(self):
         super().__init__()
+        self.rect_qrect = None
         self.rect_coordinates = None
         self.btn = None
         screen = QApplication.primaryScreen()
@@ -553,5 +556,8 @@ class Snip(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     main = Main()
-    main.main()
-    sys.exit(app.exec_())
+    try:
+        main.main()
+    finally:
+        del main
+        sys.exit(0)
