@@ -86,7 +86,7 @@ msgstr "文字の大きさ：半角数字のみ"
 
 #: main.py:181
 msgid "当你使用Deepl时，请输入你的API："
-msgstr "Deeplを使用するには、APIを入力してください："
+msgstr "Deeplを使用するには、API(キー)を入力してください："
 
 #: main.py:187
 msgid "免费获取Deepl API（官网）"
