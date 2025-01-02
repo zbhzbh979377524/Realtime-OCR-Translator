@@ -106,7 +106,10 @@ msgstr "Font Color"
 
 #: main.py:227
 msgid "本软件ocr(文字识别)基于Tesseract OCR，必须安装该软件才可使用"
-msgstr "OCR in this software is based on Tesseract OCR, which must be installed to use"
+msgstr "OCR in this software is based on Tesseract OCR, which must be installed to use.\n During installation, please select the languages required for OCR under 'Additional language data (download).'"
+
+msgid "本软件ocr(文字识别)基于Tesseract OCR，已经安装"
+msgstr "OCR in this software is based on Tesseract OCR, which is already installed"
 
 #: main.py:232
 msgid "Tesseract OCR下载网站"
@@ -119,3 +122,24 @@ msgstr "Tesseract OCR,for win 64bit Download link"
 #: main.py:284 main.py:330
 msgid "正在使用的翻译工具为：{}"
 msgstr "Current Trans  Method :{}"
+
+msgid "DeepL API key is invalid. Please check your API key."
+msgstr "DeepL API key is invalid. Please check your API key."
+
+msgid "DeepL API quota has been exceeded."
+msgstr "DeepL API quota has been exceeded."
+
+msgid "Too many requests to DeepL API. Please try again later."
+msgstr "Too many requests to DeepL API. Please try again later."
+
+msgid "DeepL API Error: "
+msgstr "DeepL API Error: "
+
+msgid "找不到Tesseract OCR的语言文件"
+msgstr "Tesseract OCR language files not found. Please follow these steps to reinstall:\n\n1. Uninstall existing Tesseract OCR\n2. Download 64-bit version: https://github.com/UB-Mannheim/tesseract/wiki\n3. During installation, select 'Additional language data'\n4. Make sure to check these language packs:\n   - Chinese (Simplified)\n   - Japanese\n   - Korean\n   - English\n5. Restart the software after installation"
+
+msgid "OCR错误: "
+msgstr "OCR Error: "
+
+msgid "请输入DeepL API key"
+msgstr "Please enter DeepL API key"
