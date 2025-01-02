@@ -126,8 +126,8 @@ class Main:
             text_bottom_2 = 'Recommend to download again '
             text_kaomoji = '(ó﹏ò。)      from Github'
             text_jp = 'Logo読み込み失敗'
-            text_jp_2 = 'GitHubからの再ダウンロードを'
-            text_zh = 'Logo已损坏          お勧め'
+            text_jp_2 = 'GitHubからの再ダウンロードをお勧め'
+            text_zh = 'Logo已损坏'
             text_zh_2 = '推荐在GitHub上重新下载完整版'
 
             # 绘制文本
@@ -168,6 +168,7 @@ class Main:
         self.root.resizable(False, False)
         self.root.deiconify()
         self.root.lift()
+        self.root.focus_force()
 
         try:
             self.root.iconbitmap("./Image/icon.ico")
