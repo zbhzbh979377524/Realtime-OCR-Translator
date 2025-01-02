@@ -168,7 +168,6 @@ class Main:
         self.root.resizable(False, False)
         self.root.deiconify()
         self.root.lift()
-        self.root.focus_force()
 
         try:
             self.root.iconbitmap("./Image/icon.ico")
