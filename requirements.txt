@@ -1,0 +1,13 @@
+# Generated requirements.txt
+# Note: Some packages like tkinter, gettext are part of Python standard library
+
+Pillow==9.5.0
+PyQt5==5.15.9
+deep-translator==1.10.1
+deepl==1.14.0
+googletrans==3.1.0a0
+numpy==1.24.3
+opencv-python==4.7.0.72
+pyautogui==0.9.53
+pytesseract==0.3.10
+translate==3.6.1
