@@ -71,31 +71,40 @@ class Main:
 
     def main(self):
         def start_translation():
-            recognize_language = combo_recognize.get()
-            translate_language = combo_translate.get()
-            translator_engine = combo_translator_engine.get()
-            refresh_time = combo_refresh_time.get()
-            font_size = font_size_entry.get()
-            # 判断输入是否合法
             try:
-                font_size = float(font_size)
-                font_size = round(font_size)
-            except ValueError:
-                font_size = 10
+                recognize_language = combo_recognize.get()
+                translate_language = combo_translate.get()
+                translator_engine = combo_translator_engine.get()
+                refresh_time = combo_refresh_time.get()
+                font_size = font_size_entry.get()
+                # 判断输入是否合法
+                try:
+                    font_size = float(font_size)
+                    font_size = round(font_size)
+                except ValueError:
+                    font_size = 10
 
-            user_api = font_API.get()
+                user_api = font_API.get()
 
-            self.select_range.get_pos()
-            if self.select_range.cur_pos and self.select_range.cur_pos != [0, 0, 0, 0]:
-                print(self.select_range.cur_pos)
-                print(type(self.select_range.cur_pos))
-                selected_area = self.select_range.cur_pos
-                self.root.iconify()
-                self.open_new_window(selected_area, recognize_language, translate_language, translator_engine,
-                                     refresh_time,
-                                     font_size, user_api, self.select_color)
-            else:
-                messagebox.showerror(_("Error"), _("请先选择区域"))
+                self.select_range.get_pos()
+                if self.select_range.cur_pos and self.select_range.cur_pos != [0, 0, 0, 0]:
+                    print(self.select_range.cur_pos)
+                    print(type(self.select_range.cur_pos))
+                    selected_area = self.select_range.cur_pos
+                    
+                    # Tesseract的確認
+                    if not screenshot_process.ScreenshotProcess.is_tesseract_installed():
+                        messagebox.showerror(_("错误"), _("找不到Tesseract OCR，请先安装Tesseract"))
+                        return  # メイン画面に戻る
+                        
+                    self.root.iconify()
+                    self.open_new_window(selected_area, recognize_language, translate_language, translator_engine,
+                                         refresh_time, font_size, user_api, self.select_color)
+                else:
+                    messagebox.showerror(_("Error"), _("请先选择区域"))
+            except Exception as e:
+                messagebox.showerror(_("Error"), str(e))
+                return  # エラー発生時もメイン画面に戻る
 
         def select_region():
             del self.select_range.snip
