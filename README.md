@@ -13,7 +13,7 @@
 ## [フルな説明ドキュメントはNoteにて](https://note.com/zbhzbh979377524/n/n81e97ae967b5)
 # 使い方
 
-1. [Realtime-OCR-Translator_1_1.zip](https://github.com/zbhzbh979377524/Realtime-OCR-Translator/releases/download/v1.1/Realtime-OCR-Translator_1_1.zip)を解凍して、解凍したフォルダーにあるmain.exeを実行します。
+1. [Realtime-OCR-Translator_1_1.zip](https://github.com/zbhzbh979377524/Realtime-OCR-Translator/releases/download/v1.1.1/Realtime-OCR-Translator_1_1.zip)を解凍して、解凍したフォルダーにあるmain.exeを実行します。
 
 2. メインページの一番上のJPをクリックすればソフトが再起動して日本語版になります。
 
