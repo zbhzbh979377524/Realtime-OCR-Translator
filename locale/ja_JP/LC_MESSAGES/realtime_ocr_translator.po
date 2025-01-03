@@ -20,6 +20,9 @@ msgstr ""
 msgid "Error"
 msgstr "エラー"
 
+msgid "错误"
+msgstr "エラー"
+
 #: main.py:54
 msgid "请先选择区域"
 msgstr "翻訳範囲を指定してください"
@@ -137,6 +140,9 @@ msgstr "DeepL APIエラー："
 
 msgid "找不到Tesseract OCR的语言文件"
 msgstr "Tesseract OCRの言語ファイルが見つかりません。以下の手順で再インストールしてください：\n\n1. 既存のTesseract OCRをアンインストール\n2. 64ビット版をダウンロード：https://github.com/UB-Mannheim/tesseract/wiki\n3. インストール時に「Additional language data」を選択\n4. 以下の言語パックにチェックを入れてください：\n   - Chinese (Simplified)\n   - Japanese\n   - Korean\n   - English\n5. インストール後、ソフトウェアを再起動"
+
+msgid "找不到Tesseract OCR，请先安装Tesseract"
+msgstr "Tesseract OCRが見つかりません。以下の手順でインストールしてください：\n\n1. 64ビット版をダウンロード：https://github.com/UB-Mannheim/tesseract/wiki\n2. インストール時に「Additional language data」を選択\n3. 以下の言語パックにチェックを入れてください：\n   - Chinese (Simplified)\n   - Japanese\n   - Korean\n   - English\n4. インストール後、ソフトウェアを再起動"
 
 msgid "OCR错误: "
 msgstr "OCRエラー: "

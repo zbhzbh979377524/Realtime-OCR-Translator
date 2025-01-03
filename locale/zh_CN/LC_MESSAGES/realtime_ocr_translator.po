@@ -141,6 +141,9 @@ msgstr "实时翻译"
 msgid "找不到Tesseract OCR的语言文件"
 msgstr "找不到Tesseract OCR的语言文件，请按以下步骤重新安装：\n\n1. 卸载现有的Tesseract OCR\n2. 下载64位版本：https://github.com/UB-Mannheim/tesseract/wiki\n3. 安装时请选择「Additional language data」\n4. 确保勾选以下语言包：\n   - Chinese (Simplified)\n   - Japanese\n   - Korean\n   - English\n5. 完成安装后重启软件"
 
+msgid "找不到Tesseract OCR，请先安装Tesseract"
+msgstr "找不到Tesseract OCR，请按以下步骤安装：\n\n1. 下载64位版本：https://github.com/UB-Mannheim/tesseract/wiki\n2. 安装时请选择「Additional language data」\n3. 确保勾选以下语言包：\n   - Chinese (Simplified)\n   - Japanese\n   - Korean\n   - English\n4. 完成安装后重启软件"
+
 msgid "OCR错误: "
 msgstr "OCR错误: "
 
