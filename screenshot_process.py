@@ -11,19 +11,24 @@ import os
 import gettext
 from translate import Translator
 from googletrans import Translator as GoogleTranslator
+import json
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
+# screenshot_process.py の set_language をこれに置き換え
 def set_language():
-    if os.path.exists('cur_language.txt'):
-        with open('cur_language.txt', 'r') as file:
-            line = file.readline()
-            if line != 'en_US' and line != 'ja_JP' and line != 'zh_CN':
-                line = 'en_US'
-    else:
-        line = 'en_US'
+    current_lang = 'ja_JP'
+    config_file = 'settings.json'
+    
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                current_lang = data.get('language', 'ja_JP')
+        except Exception:
+            pass
 
-    list1 = [line]
+    list1 = [current_lang]
     localedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
     translate = gettext.translation(domain='realtime_ocr_translator', localedir=localedir, languages=list1,
                                     fallback=True)

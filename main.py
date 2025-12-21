@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import time
@@ -7,7 +8,7 @@ import gettext
 import threading
 from queue import Queue, Empty
 from PIL import ImageGrab
-
+import subprocess
 import pyautogui
 
 try:
@@ -23,33 +24,76 @@ from PyQt5.QtGui import QPainter, QPainterPath, QBrush, QColor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget
 
 
+# main.py の既存の set_language をこれに置き換え
 def set_language():
-    if os.path.exists('cur_language.txt'):
-        with open('cur_language.txt', 'r') as file:
-            line = file.readline()
-            if line != 'en_US' and line != 'ja_JP' and line != 'zh_CN':
-                line = 'en_US'
-    else:
-        line = 'en_US'
+    current_lang = 'ja_JP'  # デフォルト
+    config_file = 'settings.json'
+    
+    # settings.json があれば読み込む
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                # languageキーがあれば取得、なければデフォルト
+                current_lang = data.get('language', 'ja_JP')
+        except Exception:
+            pass
 
-    list1 = [line]
+    # 既存の翻訳ロジック
+    list1 = [current_lang]
     localedir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'locale')
     translate = gettext.translation(domain='realtime_ocr_translator', localedir=localedir, languages=list1,
                                     fallback=True)
     translate.install()
 
 
+# main.py の reboot_soft をこれに置き換えてください
 def reboot_soft(next_language):
-    f = open('cur_language.txt', 'w')
-    if next_language == 'zh_CN':
-        f.write('zh_CN')
-    elif next_language == 'ja_JP':
-        f.write('ja_JP')
+    config_file = 'settings.json'
+    data = {}
+    
+    # 既存の設定を読み込む
+    if os.path.exists(config_file):
+        try:
+            with open(config_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+
+    # 言語設定を更新
+    data['language'] = next_language
+
+    # 保存
+    try:
+        with open(config_file, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    except Exception:
+        pass
+
+    # --- [修正] 再起動ロジック (シンプル版) ---
+    import subprocess
+    
+    # 実行中のファイルのパスを取得
+    executable_path = os.path.abspath(sys.argv[0])
+    
+    # ファイル名が '.exe' で終わっているかで判断
+    if executable_path.lower().endswith('.exe'):
+        # exeなら自分自身を再起動
+        args = [executable_path]
     else:
-        f.write('en_US')
-    f.close()
-    python = sys.executable
-    os.execl(python, python, *sys.argv)
+        # .pyなら python.exe 経由で再起動
+        args = [sys.executable] + sys.argv
+
+    try:
+        subprocess.Popen(args)
+    except Exception as e:
+        # 失敗したらメッセージを出す
+        try:
+            from tkinter import messagebox
+            messagebox.showerror("Error", f"Restart failed: {e}\nPath: {args[0]}")
+        except:
+            print(f"Restart failed: {e}")
+
     sys.exit()
 
 
@@ -70,6 +114,9 @@ class Main:
         self.select_range = SelectRange()
 
     def main(self):
+        # 設定ファイルの名前
+        CONFIG_FILE = 'settings.json'
+
         def start_translation():
             try:
                 recognize_language = combo_recognize.get()
@@ -77,6 +124,7 @@ class Main:
                 translator_engine = combo_translator_engine.get()
                 refresh_time = combo_refresh_time.get()
                 font_size = font_size_entry.get()
+
                 # 判断输入是否合法
                 try:
                     font_size = float(font_size)
@@ -85,6 +133,31 @@ class Main:
                     font_size = 10
 
                 user_api = font_API.get()
+                
+                # --- [修正] 設定の保存処理 (Merge方式) ---
+                CONFIG_FILE = 'settings.json'
+                config_data = {}
+                
+                # 1. 既存の設定があれば読み込む
+                if os.path.exists(CONFIG_FILE):
+                    try:
+                        with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                            config_data = json.load(f)
+                    except Exception:
+                        pass
+                
+                # 2. 今回の値を更新
+                config_data["translator_engine"] = translator_engine
+                config_data["user_api"] = user_api
+                # ※ languageはここでは触らないので、既存の値が維持される
+                
+                # 3. 保存
+                try:
+                    with open(CONFIG_FILE, 'w', encoding='utf-8') as f:
+                        json.dump(config_data, f, ensure_ascii=False, indent=4)
+                except Exception as e:
+                    print(f"設定保存エラー: {e}")
+                # --------------------------------------
 
                 self.select_range.get_pos()
                 if self.select_range.cur_pos and self.select_range.cur_pos != [0, 0, 0, 0]:
@@ -401,6 +474,27 @@ class Main:
         button_cn.grid(column=1, row=0, padx=10, pady=10)
         button_jp.grid(column=2, row=0, padx=10, pady=10)
         button_en.grid(column=3, row=0, padx=10, pady=10)
+
+        # --- [追加] 設定の読み込み処理 ---
+        # 起動時に前回の設定があれば読み込んで反映する
+        if os.path.exists(CONFIG_FILE):
+            try:
+                with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
+                    config_data = json.load(f)
+                    
+                    # 翻訳エンジンの復元
+                    saved_engine = config_data.get("translator_engine")
+                    if saved_engine in ["DeeplTranslator", "GoogleTranslator"]:
+                        combo_translator_engine.set(saved_engine)
+                    
+                    # APIキーの復元
+                    saved_api = config_data.get("user_api")
+                    if saved_api:
+                        font_API.delete(0, tk.END)
+                        font_API.insert(0, saved_api)
+            except Exception as e:
+                print(f"設定の読み込みに失敗しました: {e}")
+        # ---------------------------
 
         # 启动主循环
         self.root.mainloop()
