@@ -1,0 +1,8 @@
+# 编译中文语言文件
+msgfmt -o locale/zh_CN/LC_MESSAGES/realtime_ocr_translator.mo locale/zh_CN/LC_MESSAGES/realtime_ocr_translator.po
+
+# 编译日语语言文件
+msgfmt -o locale/ja_JP/LC_MESSAGES/realtime_ocr_translator.mo locale/ja_JP/LC_MESSAGES/realtime_ocr_translator.po
+
+# 编译英语语言文件
+msgfmt -o locale/en_US/LC_MESSAGES/realtime_ocr_translator.mo locale/en_US/LC_MESSAGES/realtime_ocr_translator.po

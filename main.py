@@ -4,10 +4,18 @@ import time
 import tkinter as tk
 import webbrowser
 import gettext
+import threading
+from queue import Queue, Empty
+from PIL import ImageGrab
 
 import pyautogui
 
-import screenshot_process
+try:
+    import screenshot_process
+except SystemExit:
+    # 如果 screenshot_process 检测到没有安装 Tesseract 并退出，我们也退出主程序
+    sys.exit(1)
+
 from PIL import Image, ImageDraw, ImageFont
 from tkinter import ttk, messagebox, colorchooser
 from PyQt5.QtCore import QPoint, QRectF, Qt, QRect, QSize
@@ -63,33 +71,40 @@ class Main:
 
     def main(self):
         def start_translation():
-            recognize_language = combo_recognize.get()
-            translate_language = combo_translate.get()
-            translator_engine = combo_translator_engine.get()
-            refresh_time = combo_refresh_time.get()
-            font_size = font_size_entry.get()
-            # 判断输入是否合法
             try:
-                font_size = float(font_size)
-                font_size = round(font_size)
-            except ValueError:
-                font_size = 10
+                recognize_language = combo_recognize.get()
+                translate_language = combo_translate.get()
+                translator_engine = combo_translator_engine.get()
+                refresh_time = combo_refresh_time.get()
+                font_size = font_size_entry.get()
+                # 判断输入是否合法
+                try:
+                    font_size = float(font_size)
+                    font_size = round(font_size)
+                except ValueError:
+                    font_size = 10
 
-            user_api = font_API.get()
-            if translator_engine == 'DeeplTranslator' and user_api == '':
-                translator_engine = "MyMemoryTranslator"
+                user_api = font_API.get()
 
-            self.select_range.get_pos()
-            if self.select_range.cur_pos and self.select_range.cur_pos != [0, 0, 0, 0]:
-                print(self.select_range.cur_pos)
-                print(type(self.select_range.cur_pos))
-                selected_area = self.select_range.cur_pos
-                self.root.iconify()
-                self.open_new_window(selected_area, recognize_language, translate_language, translator_engine,
-                                     refresh_time,
-                                     font_size, user_api, self.select_color)
-            else:
-                messagebox.showerror(_("Error"), _("请先选择区域"))
+                self.select_range.get_pos()
+                if self.select_range.cur_pos and self.select_range.cur_pos != [0, 0, 0, 0]:
+                    print(self.select_range.cur_pos)
+                    print(type(self.select_range.cur_pos))
+                    selected_area = self.select_range.cur_pos
+                    
+                    # Tesseract的確認
+                    if not screenshot_process.ScreenshotProcess.is_tesseract_installed():
+                        messagebox.showerror(_("错误"), _("找不到Tesseract OCR，请先安装Tesseract"))
+                        return  # メイン画面に戻る
+                        
+                    self.root.iconify()
+                    self.open_new_window(selected_area, recognize_language, translate_language, translator_engine,
+                                         refresh_time, font_size, user_api, self.select_color)
+                else:
+                    messagebox.showerror(_("Error"), _("请先选择区域"))
+            except Exception as e:
+                messagebox.showerror(_("Error"), str(e))
+                return  # エラー発生時もメイン画面に戻る
 
         def select_region():
             del self.select_range.snip
@@ -105,7 +120,7 @@ class Main:
         self.select_area = ''
         self.select_color = '#000000'
 
-        # 创建宣传图片
+        # 创建宣传片
         root = tk.Tk()
         set_language()
         if os.path.isfile('./Image/logo.png'):
@@ -163,11 +178,12 @@ class Main:
 
         # 创建主窗口
         self.root = tk.Tk()
-        self.root.geometry(f"500x500+{x}+{y}")
+        self.root.geometry(f"500x600+{x}+{y}")
         self.root.title('Realtime-OCR-Translator')
         self.root.resizable(False, False)
         self.root.deiconify()
         self.root.lift()
+        self.root.focus_force()
 
         try:
             self.root.iconbitmap("./Image/icon.ico")
@@ -199,7 +215,7 @@ class Main:
         tab4 = tk.Frame(tabControl)
         tabControl.add(tab4, text=_('关于本软件'))
 
-        # 添加“识别语言”下拉菜单
+        # 添加"识别语言"下拉菜单
         label_recognize = ttk.Label(tab1, text=_("识别语言："), font=('Yu Gothic', 14))
         label_recognize.grid(column=0, row=1, padx=10, pady=10)
 
@@ -209,7 +225,7 @@ class Main:
         combo_recognize.grid(column=1, row=1, padx=10, pady=10, columnspan=3)
         combo_recognize.current(0)
 
-        # 添加“翻译语言”下拉菜单
+        # 添加"翻译语言"下拉菜单
         label_translate = ttk.Label(tab1, text=_("翻译语言："), font=('Yu Gothic', 14))
         label_translate.grid(column=0, row=2, padx=10, pady=10)
 
@@ -219,7 +235,7 @@ class Main:
         combo_translate.grid(column=1, row=2, padx=10, pady=10, columnspan=3)
         combo_translate.current(0)
 
-        # 创建“选择区域”按钮
+        # 创建"选择区域"按钮
         button_select_region = tk.Button(tab1, text=_("选择区域"), command=select_region, height=5, width=20,
                                          font=('Yu Gothic', 14))
         button_select_region.grid(column=0, row=3, padx=10, pady=10)
@@ -228,18 +244,18 @@ class Main:
                                  font=('Yu Gothic', 14))
         button_start.grid(column=1, row=3, padx=10, pady=10, columnspan=3)
 
-        # 添加“翻译工具”下拉菜单
+        # 添加"翻译工具"下拉菜单
         label_translator_engine = tk.Label(tab2, text=_("翻译工具："), font=('Yu Gothic', 14))
         label_translator_engine.grid(column=0, row=0, padx=10, pady=10)
 
         combo_translator_engine = ttk.Combobox(tab2, width=30,
-                                               values=["DeeplTranslator", "GoogleTranslator", "PonsTranslator",
-                                                       "LingueeTranslator", "MyMemoryTranslator"], state="readonly",
+                                               values=["DeeplTranslator", "GoogleTranslator"],
+                                               state="readonly",
                                                font=('Yu Gothic', 12))
         combo_translator_engine.grid(column=1, row=0, padx=10, pady=10)
         combo_translator_engine.current(0)
 
-        # 添加“刷新时间”下拉菜单
+        # 添加"刷新时间"下拉菜单
         label_refresh_time = tk.Label(tab3, text=_("刷新时间： 秒"), font=('Yu Gothic', 12))
         label_refresh_time.grid(column=0, row=1, padx=10, pady=10)
 
@@ -248,14 +264,14 @@ class Main:
         combo_refresh_time.grid(column=1, row=1, padx=10, pady=10)
         combo_refresh_time.current(1)
 
-        # 添加“字体大小”标签和文本框
+        # 添加"字体大小"标签和文本框
         label_font_size = tk.Label(tab3, text=_("字体大小： 输入半角数字"), font=('Yu Gothic', 12))
         label_font_size.grid(column=0, row=2, padx=10, pady=10)
 
         font_size_entry = ttk.Entry(tab3, width=10, font=('Yu Gothic', 12))
         font_size_entry.grid(column=1, row=2, padx=10, pady=10)
 
-        # 添加“API”标签和文本框
+        # 添加"API"标签和文本框
         label_API = tk.Label(tab2, text=_("当你使用Deepl时，请输入你的API："), font=('Yu Gothic', 13))
         label_API.grid(column=0, row=2, padx=10, pady=10, columnspan=2)
 
@@ -274,7 +290,7 @@ class Main:
         canvas.place(x=170, y=10)
         canvas.bind('<Button-1>',
                     lambda event: webbrowser.open_new('https://twitter.com/zzzzzzbh'))
-        # 在 Canvas 上添加图片
+        # 在 Canvas 上添图片
 
         if os.path.isfile('./Image/twitter.png'):
             pass
@@ -307,7 +323,7 @@ class Main:
 
         image = tk.PhotoImage(file="./Image/twitter.png")
         canvas.create_image(0, 0, anchor=tk.NW, image=image)
-        # 添加“twitter”标签和文本框
+        # 添加"twitter"标签和文本框
         label_twitter = tk.Label(tab4, text="Twitter：", font=('Yu Gothic', 14))
         label_twitter.grid(column=0, row=2, padx=10, pady=10)
 
@@ -317,7 +333,7 @@ class Main:
         label_block.bind('<Button-1>',
                          lambda event: webbrowser.open_new(
                              'https://twitter.com/zzzzzzbh'))
-        # 添加“github”标签和文本框
+        # 添加"github"标签和文本框‘
         label_github = tk.Label(tab4, text="Github：", font=('Yu Gothic', 14))
         label_github.grid(column=0, row=6, padx=10, pady=10)
         label_github_url = tk.Label(tab4, text='https://github.com/zbhzbh979377524/Realtime-OCR-Translator',
@@ -334,9 +350,23 @@ class Main:
         color_button = tk.Button(tab3, text=_("选择字的颜色"), command=select_color, height=5, width=20,
                                  font=('Yu Gothic', 12))
         color_button.grid(pady=10)
-        # 添加“Tesseract OCR”标签和文本框
-        tesseract_msg = tk.Label(tab1, text=_("本软件ocr(文字识别)基于Tesseract OCR，必须安装该软件才可使用"),
-                                 foreground='red', font=('Yu Gothic', 14), wraplength=450)
+        # 添加"Tesseract OCR"标签和文本框
+        if screenshot_process.ScreenshotProcess.is_tesseract_installed():
+            tesseract_msg = tk.Label(
+                tab1, 
+                text=_("本软件ocr(文字识别)基于Tesseract OCR，已经安装"),
+                foreground='blue', 
+                font=('Yu Gothic', 14), 
+                wraplength=450
+            )
+        else:
+            tesseract_msg = tk.Label(
+                tab1, 
+                text=_("本软件ocr(文字识别)基于Tesseract OCR，必须安装该软件才可使用"),
+                foreground='red', 
+                font=('Yu Gothic', 14), 
+                wraplength=450
+            )
         tesseract_msg.grid(column=0, row=4, padx=10, pady=10, columnspan=5)
 
         # 添加Tesseract下载页面文本框和超链接
@@ -352,8 +382,7 @@ class Main:
         tesseract_download.grid(column=0, row=6, padx=10, pady=10, columnspan=5)
         tesseract_download.bind('<Button-1>',
                                 lambda event: webbrowser.open_new(
-                                    'https://digi.bib.uni-mannheim.de/tesseract/tesseract-ocr-w64-setup-5.3.1'
-                                    '.20230401.exe'))
+                                    'https://github.com/tesseract-ocr/tesseract/releases/download/5.5.0/tesseract-ocr-w64-setup-5.5.0.20241111.exe'))
 
         # 添加软件语言选择
         # 创建 label
@@ -379,77 +408,189 @@ class Main:
     # 显示翻译内容的窗口
     def open_new_window(self, select_area, recognize_language, translate_language, translator_engine, refresh_time,
                         font_size, user_api, select_color):
-        # 创建新窗口
-        new_window = tk.Toplevel()
-        print('recognize_language:' + recognize_language)
-        print('translate_language' + translate_language)
-        # 获取屏幕尺寸
-        screen_width = new_window.winfo_screenwidth()
-        screen_height = new_window.winfo_screenheight()
-        # 计算图片位置
-        x = (screen_width - 600) // 2
-        y = (screen_height - 200) * 3 // 4
-        new_window.geometry(f"600x200+{x}+{y}")
         try:
-            new_window.iconbitmap("./Image/icon.ico")
-        except Exception:
-            pass
-
-        def on_close():
-            new_window.destroy()
-            self.root.deiconify()
-
-        new_window.protocol("WM_DELETE_WINDOW", on_close)
-        new_window.title(_("正在使用的翻译工具为：{}").format(translator_engine))
-        new_window.geometry("600x200")
-        new_window.option_add("*Font", ("Helvetica", font_size))
-        # 设置前景色
-        new_window.option_add("*foreground", select_color)
-        # 将窗口始终显示在最前面
-        new_window.wm_attributes('-topmost', 'True')
-
-        self.past_img = Image.open('./Image/twitter.png')
-        self.past_text = ''
-        self.past_translated = ''
-
-        # 显示翻译内容
-        def update_translate():
-            translate_object = screenshot_process.ScreenshotProcess(select_area=select_area,
-                                                                    recognize_language=recognize_language,
-                                                                    translate_language=translate_language,
-                                                                    translator_engine=translator_engine,
-                                                                    refresh_time=refresh_time,
-                                                                    font_size=font_size,
-                                                                    user_api=user_api)
-            temp_img = translate_object.screenshot()
-            # 图片不一样
-            if temp_img and temp_img.mode != self.past_img.mode or temp_img.size != self.past_img.size or \
-                    temp_img.tobytes() != self.past_img.tobytes():
-                translate_object.screenshot_file = temp_img
-                self.past_img = temp_img
-                temp_text = translate_object.ocr()
-                # OCR文字不一样
-                if temp_text and temp_text != self.past_text:
-                    self.past_text = temp_text
-                    translate_object.new_ocr_result = temp_text
-                    temp_translated = translate_object.translate()
-                    if temp_translated and temp_translated != self.past_translated:
-                        self.past_translated = temp_translated
-                        translate_label.config(text=self.past_translated)
+            # DeepL API 的テスト
+            if translator_engine == "DeeplTranslator":
+                try:
+                    test_translator = screenshot_process.ScreenshotProcess(
+                        select_area=select_area,
+                        recognize_language=recognize_language,
+                        translate_language=translate_language,
+                        translator_engine=translator_engine,
+                        refresh_time=refresh_time,
+                        font_size=font_size,
+                        user_api=user_api
+                    )
+                    test_translator.new_ocr_result = "test"
+                    try:
+                        test_translator.translate()
+                    except Exception as e:
+                        error_msg = str(e)
+                        error_title = _("Error")
+                        if "401:" in error_msg:
+                            error_message = _("DeepL API key is invalid. Please check your API key.")
+                        elif "456:" in error_msg:
+                            error_message = _("DeepL API quota has been exceeded.")
+                        elif "429:" in error_msg:
+                            error_message = _("Too many requests to DeepL API. Please try again later.")
+                        else:
+                            error_message = _("DeepL API Error: ") + error_msg
+                        messagebox.showerror(error_title, error_message)
+                        self.root.deiconify()  # メイン画面を表示
+                        return
+                except Exception as e:
+                    error_title = _("Error")
+                    if "401" in str(e):
+                        error_message = _("DeepL API key is invalid. Please check your API key.")
+                    elif "456" in str(e):
+                        error_message = _("DeepL API quota has been exceeded.")
+                    elif "429" in str(e):
+                        error_message = _("Too many requests to DeepL API. Please try again later.")
                     else:
-                        pass
+                        error_message = _("DeepL API Error: ") + str(e)
+                    messagebox.showerror(error_title, error_message)
+                    self.root.deiconify()  # メイン画面を表示
+                    return
 
-                else:
+            # 新しいウィンドウを作成
+            new_window = tk.Toplevel()
+            new_window.title(_("Real-time Translation"))
+            
+            # 设置窗口大小和位置
+            window_width = 600
+            window_height = 100  # 适合frame的高度加上窗口装饰的高度
+
+            # 获取屏幕尺寸
+            screen_width = new_window.winfo_screenwidth()
+            screen_height = new_window.winfo_screenheight()
+
+            # 计算位置 - 水平居中，垂直位置在屏幕底部上方一点
+            x_position = (screen_width - window_width) // 2
+            y_position = int(screen_height * 0.8)  # 位于屏幕底部上方20%处
+
+            # 设置窗口位置和大小
+            new_window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
+            # 保持窗口始终在最顶层
+            new_window.attributes('-topmost', True)
+
+            # 创建一个队列用于线程间通信
+            translation_queue = Queue()
+            self.past_translated = ""
+
+            # 创建一个框架来容纳标签，设置固定大小
+            frame = tk.Frame(new_window)  
+            frame.pack(padx=10, pady=10, expand=True, fill='both')
+
+            # 初期のwraplengthをウィンドウの幅から計算
+            initial_wraplength = new_window.winfo_width() - 30  # パディングを考慮
+
+            # 创建显示翻译结果的标签，添加文字颜色设置
+            translate_label = tk.Label(
+                frame,  # 将标签放在frame中
+                text="",
+                wraplength=initial_wraplength,  # 初期値を設定
+                justify="left",
+                font=("Arial", font_size),
+                fg=select_color,  # 设置文字颜色
+                anchor="nw"  # 文本左上对齐
+            )
+            translate_label.pack(
+                expand=True, 
+                fill="both", 
+                padx=5, 
+                pady=5,
+                anchor="n"
+            )
+
+            # ウィンドウサイズ変更時のイベントハンドラ
+            def on_window_resize(event):
+                # ウィンドウの現在の幅からwraplengthを計算
+                new_wraplength = event.width - 30  # パディングを考慮
+                translate_label.configure(wraplength=new_wraplength)
+
+            # リサイズイベントをバインド
+            new_window.bind('<Configure>', on_window_resize)
+
+            # ウィンドウが完全に表示された後に初期wraplengthを設定
+            def update_initial_wraplength():
+                current_width = new_window.winfo_width()
+                translate_label.configure(wraplength=current_width - 30)
+
+            # ウィンドウが表示された後に実行
+            new_window.after(100, update_initial_wraplength)
+
+            def translate_worker():
+                try:
+                    translate_object = screenshot_process.ScreenshotProcess(
+                        select_area=select_area,
+                        recognize_language=recognize_language,
+                        translate_language=translate_language,
+                        translator_engine=translator_engine,
+                        refresh_time=refresh_time,
+                        font_size=font_size,
+                        user_api=user_api
+                    )
+                    
+                    translate_object.screenshot()  # 先截图
+                    
+                    try:
+                        translate_object.ocr()     # OCR识别
+                    except RuntimeError as e:
+                        translation_queue.put(('error', str(e)))
+                        return
+                        
+                    # 如果有OCR结果，进行翻译
+                    if translate_object.new_ocr_result:
+                        temp_translated = translate_object.translate()
+                        if temp_translated and temp_translated != self.past_translated:
+                            translation_queue.put(('success', temp_translated))
+                        else:
+                            translation_queue.put(('no_change', None))
+                    else:
+                        translation_queue.put(('no_change', None))
+                        
+                except Exception as e:
+                    translation_queue.put(('error', str(e)))
+
+            def check_queue():
+                try:
+                    status, result = translation_queue.get_nowait()
+                    if status == 'success':
+                        self.past_translated = result
+                        # 改行を保持したまま表示
+                        translate_label.config(text=result)
+                        print(f"更新界面文本: {result}")
+                    elif status == 'error':
+                        messagebox.showerror(_("错误"), result)
+                        new_window.destroy()
+                        self.root.deiconify()
+                        return
+                except Empty:
                     pass
+                
+                if new_window.winfo_exists():
+                    new_window.after(100, check_queue)
 
-            else:
-                pass
-            translate_label.after(int(float(refresh_time) * 1000), update_translate)
+            def update_translate():
+                # 启动翻译线程
+                thread = threading.Thread(target=translate_worker)
+                thread.daemon = True
+                thread.start()
+                
+                # 设置下一次更新
+                if new_window.winfo_exists():
+                    new_window.after(int(float(refresh_time) * 1000), update_translate)
 
-        translate_label = tk.Label(new_window, text=(_("正在使用的翻译工具为：{}").format(translator_engine)),
-                                   font=('Yu Gothic', font_size))
-        translate_label.pack(pady=5)
-        update_translate()
+            # 开始翻译循环
+            update_translate()
+            # 开始检查队列
+            check_queue()
+
+        except Exception as e:
+            messagebox.showerror(_("Error"), str(e))
+            self.root.deiconify()  # 例外発生時にメイン画面を表示
+            return
 
 
 class SelectRange(QMainWindow):
@@ -460,7 +601,7 @@ class SelectRange(QMainWindow):
         self.snip = Snip()
 
     def start(self):
-        # クリックされたらsnipクラスを画面全体で動かすよ
+        # リックされたらsnipクラスを画面全体で動かすよ
         self.snip.showFullScreen()
 
     def get_pos(self):
@@ -494,7 +635,7 @@ class Snip(QWidget):
     def paintEvent(self, event):
         # 今回は絵を描く場所じゃないよ
         painter = QPainter(self)
-        # NoPenにすると線を描画しないよ。便利だね
+        # NoPenにすると線を描しないよ。便だね
         painter.setPen(Qt.NoPen)
         # 切り抜く場所の大きさを決めるよ。今回はデスクトップだね
         rectSize = QApplication.desktop().screenGeometry()
@@ -506,15 +647,15 @@ class Snip(QWidget):
         # 指定した位置の左上の位置を覚えておくよ
         painterPath.addRect(QRectF(rectSize))
         # 切り取ろうとしている部分を表示するよ
-        # どこを切り取ろうとしているか見えないと困るよね。
+        # どうを切り取ろうとしているか見えないと困るよね。
         painterPath.addRoundedRect(QRectF(self.startPos, self.endPos), 0, 0)
         # 切り取ることができる範囲を塗りつぶすよ。今回はデスクトップ全体のことだね
         painter.setBrush(QBrush(QColor(0, 0, 100, 100)))
-        # 切り取ろうとしている場所を表示するよ。
+        # 切り取ろうとしている場所を表示るよ。
         painter.drawPath(painterPath)
 
     def mousePressEvent(self, event):
-        # クリックした位置を覚えておくよ
+        # クリックした位置を覚えておく
         self.startPos = event.pos()
         self.confirmBtn.hide()
 
@@ -555,10 +696,15 @@ class Snip(QWidget):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    main = Main()
     try:
+        app = QApplication(sys.argv)
+        main = Main()
         main.main()
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
     finally:
-        del main
+        if 'main' in locals():
+            del main
         sys.exit(0)
